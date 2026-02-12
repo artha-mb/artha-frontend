@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 
 function Form1() {
 
@@ -37,7 +39,11 @@ function Form1() {
       exam: "",
       language: "English",
     });
+
+    navigate("/instructions")
   };
+
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-[#0B1220] flex items-center justify-center px-4">
