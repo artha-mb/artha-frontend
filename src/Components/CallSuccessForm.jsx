@@ -1,7 +1,10 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function CallSuccessForm() {
+
+  const navigate = useNavigate();
 
   // 👇 receive data from Form2
   const location = useLocation();
@@ -36,7 +39,9 @@ function CallSuccessForm() {
           </p>
         </div>
 
-        <button className="w-full bg-blue-500 hover:bg-blue-600 transition py-3 rounded-lg font-semibold">
+        <button className="w-full bg-blue-500 hover:bg-blue-600 transition py-3 rounded-lg font-semibold"
+            onClick={() => navigate("/")}
+        >
           🏠 Go to Dashboard
         </button>
 

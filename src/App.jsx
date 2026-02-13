@@ -10,6 +10,7 @@ import Header from "./Components/Navbar";
 import ExamInstruction from "./Components/ExamInstruction";
 import ExamResult from "./Components/ExamReport";
 import Exam from "./Components/Exam";
+import LoadingScreen from "./Components/LoadingScreen";
 
 export default function App() {
   return (
@@ -26,6 +27,8 @@ export default function App() {
         <Route path="/examinstruction" element={<ExamInstruction />} />
         <Route path="/examreport" element={<ExamResult />} />
         <Route path="/exam" element={<Exam />} />
+        <Route path="/loading" element={<LoadingScreen />} />
+
       </Routes>
     </Router>
   );

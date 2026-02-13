@@ -1,8 +1,13 @@
 import { useState } from "react";
 import { CheckCircle, AlertTriangle, ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+
 
 export default function Instructions() {
+
+    const location = useLocation();
+const previousPage = location.state?.from || "/form1";
+
 
     const navigate = useNavigate();
   const [agreed, setAgreed] = useState(false);
@@ -22,7 +27,7 @@ export default function Instructions() {
       {/* Header */}
       <div className="flex items-center justify-between mb-10">
         <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition"
-          onClick={() => navigate("/form1")}
+          onClick={() => navigate(previousPage)}
         >
           <ArrowLeft size={18} />
           Back

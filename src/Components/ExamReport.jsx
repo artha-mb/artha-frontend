@@ -1,6 +1,8 @@
 import React from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 
 function ExamResult() {
+    const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-[#0B1220] text-white px-4 py-10">
 
@@ -10,11 +12,11 @@ function ExamResult() {
       </h1>
 
       {/* 🔵 Main Result Card */}
-      <div className="max-w-4xl mx-auto border border-blue-500 rounded-2xl p-10 bg-gradient-to-r from-[#0B1B34] to-[#0D1A2B]">
+      <div className="max-w-4xl mx-auto border border-blue-500 rounded-2xl p-10 bg-linear-to-r from-[#0B1B34] to-[#0D1A2B]">
 
         {/* Score Circle */}
         <div className="flex justify-center mb-6">
-          <div className="w-32 h-32 rounded-full border-[8px] border-blue-500 flex flex-col items-center justify-center">
+          <div className="w-32 h-32 rounded-full border-8 border-blue-500 flex flex-col items-center justify-center">
             <p className="text-3xl font-bold">80.0%</p>
             <span className="text-sm text-gray-300">Score</span>
           </div>
@@ -32,7 +34,7 @@ function ExamResult() {
             <p className="text-xl font-semibold">1247</p>
           </div>
 
-          <div className="h-10 w-[1px] bg-gray-600"></div>
+          <div className="h-10 w-px bg-gray-600"></div>
 
           <div className="text-center">
             <p className="text-gray-400 text-sm">Percentile</p>
@@ -85,7 +87,9 @@ function ExamResult() {
           📊 View Detailed Analysis
         </button>
 
-        <button className="bg-[#33475B] hover:bg-[#3d556d] py-4 rounded-xl font-semibold">
+        <button className="bg-[#33475B] hover:bg-[#3d556d] py-4 rounded-xl font-semibold"
+            onClick={() => navigate("/")}
+            >
           📈 Go to Dashboard
         </button>
 

@@ -1,1 +1,8 @@
 @import 'tailwindcss';
+@theme{
+    --color-brandColorOne:#8806CE;
+    --color-brandColorTwo:'#65049C';
+}
+:root{
+  background-color: white;
+}
