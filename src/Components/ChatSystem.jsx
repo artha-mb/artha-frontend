@@ -188,9 +188,11 @@ function ChatSystem({ mode, onStartExam, onBack }) {
     return (
         <div className="flex flex-col h-screen bg-gray-100">
             {/* Header */}
-            <div className="bg-[#2D4A9E] text-white px-6 py-4 flex justify-between shadow-md">
+            <div className="bg-brandColorOne text-white px-6 py-4 flex justify-between shadow-md">
                 <div className="flex items-center gap-3">
-                    <button onClick={onBack}>
+                    <button
+                     onClick={() => navigate("/")} 
+                     className="p-2 rounded-full transition duration-200 hover"    >
                         <ArrowLeft size={22} />
                     </button>
                     <h2 className="text-xl font-semibold">Chat with Artha</h2>
@@ -212,7 +214,7 @@ function ChatSystem({ mode, onStartExam, onBack }) {
                                     ${isWelcomeMessage ? "max-w-2xl px-6 py-6 text-base" : "max-w-xl px-5 py-4 text-sm"}
                                     rounded-2xl whitespace-pre-line shadow
                                     ${msg.type === "user"
-                                        ? "bg-[#2D4A9E] text-white rounded-br-none"
+                                        ? "bg-brandColorOne text-white rounded-br-none"
                                         : "bg-gray-200 text-gray-800 rounded-bl-none"}
                                 `}
                             >
@@ -230,12 +232,12 @@ function ChatSystem({ mode, onStartExam, onBack }) {
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                    className="flex-1 border rounded-xl px-4 py-2"
+                    className="flex-1 border rounded-xl px-4 py-2 border-brandColorOne"
                     placeholder="Type your answer..."
                 />
                 <button
                     onClick={handleSend}
-                    className="bg-[#2D4A9E] text-white px-4 rounded-xl"
+                    className="bg-brandColorOne text-white px-4 rounded-xl"
                 >
                     <Send size={18} />
                 </button>
