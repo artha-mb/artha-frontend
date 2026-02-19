@@ -1,89 +1,165 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Menu, X } from "lucide-react";
-import HeroSection from "./HeroSection";
-import Services from "./Services";
-import WhyArtha from "./WhyArtha";
-import Contact from "./Contact";
+import { useNavigate } from "react-router-dom";
+import Hero from "./Hero";
+import PainPoints from "./PainPoints";
+import HowItWorks from "./HowItWorks";
+import ExamCoverage from "./ExamCoverage";
+import Pricing from "./Pricing";
+import MentalHealth from "./MentalHealth";
 import Footer from "./Footer";
 
-export default function Header() {
+function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
-    <div>
-    <header className="fixed top-0 left-0 w-full z-50 bg-white text-gray-600 shadow-md">
+    <>
+      <div>
+        <header className="fixed top-0 left-0 w-full z-50 bg-white shadow-md">
 
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        
-        {/* Logo */}
-        <h1 className="text-2xl font-bold tracking-wide text-[#8806CE]">
-          Artha
-        </h1>
+          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center space-x-8">
-          <a href="#" className="hover:text-gray-800 transition">Home</a>
-          <a href="#" className="hover:text-gray-800 transition">About</a>
-          <a href="#" className="hover:text-gray-800 transition">Services</a>
-          <a href="#" className="hover:text-gray-800 transition">Pricing</a>
-        </nav>
+            {/* Logo */}
+            <h1 className="text-2xl font-bold text-[#8806CE]">
+              Artha
+            </h1>
 
-        {/* Desktop Buttons */}
-        <div className="hidden md:flex items-center space-x-4">
-            {/* Filled Button */}
-            <button className="bg-[#8806CE] text-white px-5 py-2 rounded-lg font-semibold hover:bg-[#65049C] transition shadow-md">
-                Contact
-            </button>
-            {/* Outline Button */}
-            <button className="border-2 border-[#8806CE] text-[#8806CE] px-6 py-1.5 rounded-lg font-semibold hover:bg-violet-50 transition">
+            {/* Desktop Menu */}
+            <nav className="hidden md:flex items-center space-x-8 font-medium">
+              <a href="#exams" className="hover:text-orange-500">Exams</a>
+              <a href="#how" className="hover:text-orange-500">How It Works</a>
+              <a href="#pricing" className="hover:text-orange-500">Pricing</a>
+              <a href="#contact" className="hover:text-orange-500">Contact</a>
+            </nav>
+
+            {/* Desktop Buttons */}
+            <div className="hidden md:flex items-center space-x-4">
+
+              <button
+                onClick={() => navigate("/login")}
+                className="border border-orange-500 text-orange-500 px-5 py-2 rounded-lg font-semibold transition-all duration-300 hover:bg-orange-500 hover:text-white cursor-pointer"
+              >
                 Login
+              </button>
+
+              <button
+                onClick={() => navigate("/register")}
+                className="bg-orange-500 text-white px-5 py-2 rounded-lg font-semibold hover:bg-orange-400 transition-all duration-300 shadow-md cursor-pointer"
+              >
+                Start Test
+              </button>
+
+            </div>
+
+
+            {/* Mobile Hamburger */}
+            <button
+              className="md:hidden text-[#8806CE] cursor-pointer"
+              onClick={() => setIsOpen(true)}
+            >
+              <Menu size={28} />
             </button>
-        </div>
 
+          </div>
+        </header>
 
-        {/* Mobile Hamburger */}
-        <button
-          className="md:hidden text-[#8806CE]"
-          onClick={() => setIsOpen(!isOpen)}
+        {/* Overlay */}
+        {isOpen && (
+          <div
+            className="fixed inset-0 bg-black/40 z-40"
+            onClick={() => setIsOpen(false)}
+          ></div>
+        )}
+
+        {/* Sidebar */}
+        <div
+          className={`fixed top-0 right-0 h-full w-72 bg-white shadow-lg z-50 transform transition-transform duration-300 ${isOpen ? "translate-x-0" : "translate-x-full"
+            }`}
         >
-          {isOpen ? <X size={28} /> : <Menu size={28} />}
-        </button>
-      </div>
 
-      {/* Mobile Menu */}
-      {isOpen && (
-        <div className="md:hidden bg-gray-50 px-6 py-6 space-y-6 text-gray-600">
-          <nav className="flex flex-col space-y-4">
-            <a href="#" className="hover:text-gray-800">Home</a>
-            <a href="#" className="hover:text-gray-800">About</a>
-            <a href="#" className="hover:text-gray-800">Services</a>
-            <a href="#" className="hover:text-gray-800">Pricing</a>
+          {/* Sidebar Header */}
+          <div className="flex justify-between items-center px-6 py-4 border-b">
+            <h2 className="text-xl font-bold text-[#8806CE]">Menu</h2>
+            <button
+              className=" cursor-pointer hover:text-red-500"
+              onClick={() => setIsOpen(false)}>
+              <X size={24} />
+            </button>
+          </div>
+
+          {/* Sidebar Links */}
+          <nav className="flex flex-col p-6 space-y-6 font-medium text-gray-700">
+            <a
+              href="#exams"
+              onClick={() => setIsOpen(false)}
+              className="hover:text-orange-500"
+            >
+              Exams
+            </a>
+
+            <a
+              href="#how"
+              onClick={() => setIsOpen(false)}
+              className="hover:text-orange-500"
+            >
+              How It Works
+            </a>
+
+            <a
+              href="#pricing"
+              onClick={() => setIsOpen(false)}
+              className="hover:text-orange-500"
+            >
+              Pricing
+            </a>
+
+            <a
+              href="#contact"
+              onClick={() => setIsOpen(false)}
+              className="hover:text-orange-500"
+            >
+              Contact
+            </a>
           </nav>
 
-          <div className="flex flex-col space-y-3">
-  
-          {/* Filled Button */}
-            <button className="bg-[#8806CE] text-white px-6 py-2 text-sm rounded-md font-medium hover:bg-[#65049C] transition w-fit shadow-sm">
-                Contact
+
+          {/* Sidebar Buttons */}
+          <div className="flex flex-col px-6 space-y-4">
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                navigate("/login");
+              }}
+              className="w-full border border-orange-500 text-orange-500 px-5 py-2 rounded-lg font-semibold hover:bg-orange-500 hover:text-white cursor-pointer"
+            >
+              Login
             </button>
-          {/* Outline Button */}
-            <button className="border-2 border-[#8806CE] text-[#8806CE] px-7 py-2 text-sm rounded-md font-medium hover:bg-violet-50 transition w-fit">
-                Login
+
+
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                navigate("/register");
+              }}
+              className="w-full bg-orange-500 text-white px-5 py-2 rounded-lg font-semibold hover:bg-orange-400 shadow-md cursor-pointer"
+            >
+              Start Test
             </button>
-        </div>
+
+          </div>
 
         </div>
-      )}
-      
-    </header>
-    <HeroSection />
-    <Services />
-    <WhyArtha />
-    <Contact />
-    <Footer />
-
-    </div>
-    
+        <Hero />
+        <PainPoints />
+        <HowItWorks />
+        <ExamCoverage />
+        <Pricing />
+        <MentalHealth />
+        <Footer />
+      </div>
+    </>
   );
-
 }
+
+export default Navbar;

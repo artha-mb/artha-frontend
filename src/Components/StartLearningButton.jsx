@@ -1,17 +1,15 @@
-import React from 'react'
+import React from "react";
 
-const StartLearningButton = () => {
-    return (
-        <div>
-            {/* Button */}
-            <button
-                type="submit"
-                className="w-full bg-blue-500 hover:bg-blue-600 transition text-white py-3 rounded-lg font-semibold"
-            >
-                Start Learning →
-            </button>
-        </div>
-    )
-}
+const StartLearningButton = ({ loading }) => {
+  return (
+    <button
+      type="submit"
+      disabled={loading}
+      className="w-full cursor-pointer bg-blue-500 hover:bg-blue-600 transition text-white py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {loading ? "Saving..." : "Start Learning →"}
+    </button>
+  );
+};
 
-export default StartLearningButton
+export default StartLearningButton;

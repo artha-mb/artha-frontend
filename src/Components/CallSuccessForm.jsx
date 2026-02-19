@@ -1,53 +1,95 @@
 import React from "react";
-import { useLocation } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { CheckCircle } from "lucide-react";
+import BackButton from "./BackButton";
+import ExamHall from "../assets/ExamHall.jpg";
 
 function CallSuccessForm() {
-
   const navigate = useNavigate();
-
-  // 👇 receive data from Form2
   const location = useLocation();
   const data = location.state;
 
   return (
-    <div className="min-h-screen bg-[#0B1220] flex items-center justify-center px-4 text-white">
-      
-      <div className="w-full max-w-xl bg-[#2B3A4D] rounded-2xl border border-gray-600 p-10 text-center">
+    <div className="relative min-h-screen flex items-center justify-center px-4 overflow-hidden">
 
+      {/* 🔥 Background Image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${ExamHall})` }}
+      ></div>
+
+      {/* 🔥 Blue Overlay */}
+      <div className="absolute inset-0 bg-brandColorOne/80 backdrop-blur-[2px]"></div>
+
+      {/* 🔥 Card */}
+      <div className="relative z-20 w-full max-w-xl bg-white/95 backdrop-blur-md rounded-2xl border border-white/30 p-10 shadow-2xl text-center">
+
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <button className="bg-brandColorOne px-4 py-2 rounded-lg text-white cursor-pointer"
+            onClick={() => navigate("/chatsystem")}>
+            ← Back
+          </button>
+        </div>
+
+        {/* Success Icon */}
         <div className="flex justify-center mb-6">
-          <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center text-3xl text-green-400">
-            ✔
+          <div className="w-16 h-16 bg-brandColorOne/10 rounded-full flex items-center justify-center">
+            <CheckCircle className="text-brandColorOne w-8 h-8" />
           </div>
         </div>
 
-        <h1 className="text-3xl font-bold mb-3">
+        {/* Title */}
+        <h1 className="text-2xl font-semibold text-gray-900 mb-3">
           Call Request Confirmed!
         </h1>
 
-        <p className="text-gray-300 mb-8">
+        <p className="text-gray-500 mb-8">
           Our counselor will call you at your preferred time.
         </p>
 
-        {/* 🔥 Dynamic Time */}
-        <div className="bg-[#33475B] rounded-xl border border-gray-500 p-6 text-left mb-8">
-          <p className="text-sm text-gray-200 mb-2">
-            📅 Expected Call Time
+        {/* Details Card */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-6 text-left mb-8">
+
+          <p className="text-sm text-gray-500 mb-2">
+            Preferred Call Time
           </p>
-          <p className="text-gray-300">
+
+          <p className="text-lg font-medium text-brandColorOne">
             {data?.time || "Not Selected"}
           </p>
+
+          {data?.fullName && (
+            <p className="text-sm text-gray-600 mt-3">
+              Name: {data.fullName}
+            </p>
+          )}
+
+          {data?.phone && (
+            <p className="text-sm text-gray-600">
+              Phone: {data.phone}
+            </p>
+          )}
+
+          {data?.purpose && (
+            <p className="text-sm text-gray-600 mt-2">
+              Purpose: {data.purpose}
+            </p>
+          )}
         </div>
 
-        <button className="w-full bg-blue-500 hover:bg-blue-600 transition py-3 rounded-lg font-semibold"
-            onClick={() => navigate("/")}
+        {/* Button */}
+        <button
+          onClick={() => navigate("/")}
+          className="w-full py-3 rounded-lg font-semibold text-white bg-brandColorThree hover:bg-brandColorFour transition shadow-md cursor-pointer"
         >
-          🏠 Go to Dashboard
+          Go to Dashboard →
         </button>
 
       </div>
     </div>
   );
+
 }
 
 export default CallSuccessForm;

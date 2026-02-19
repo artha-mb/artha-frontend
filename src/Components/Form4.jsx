@@ -1,176 +1,324 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import StartLearningButton from "./StartLearningButton";
+import { Phone } from "lucide-react";
 import BackButton from "./BackButton";
+import { createCallRequest } from "../apis/callRequestApi";
+import ProfileMenu from "./ProfileMenu";
+import ExamHall from "../assets/ExamHall.jpg";
+
 
 function Form4() {
+  const location = useLocation();
+  const prefilledData = location.state?.formData || {};
+  const navigate = useNavigate();
 
-    const navigate = useNavigate();
+  // Debug: Log the data coming from chat
+  console.log("=== Form4 Debug ===");
+  console.log("Full prefilledData from chat:", prefilledData);
 
-    const location = useLocation();
-    const prefilledData = location.state || {};
+  // Get logged-in user from localStorage
+  const loggedUser = JSON.parse(localStorage.getItem("loggedUser") || "{}");
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
-    // 🟢 form state
-    const [formData, setFormData] = useState({
-        fullName: prefilledData.fullName || "",
-        phone: prefilledData.phone || "",
-        time: prefilledData.time || "",
-        purpose: prefilledData.purpose || "",
+  const handleLogout = () => {
+    localStorage.removeItem("loggedUser");
+    navigate("/login");
+  };
+
+  const [formData, setFormData] = useState({
+    fullName: loggedUser.fullName || prefilledData.fullName || "",
+    mobile: loggedUser.mobile || prefilledData.mobile || "",
+    degree: prefilledData.degree || "",
+    stream: prefilledData.stream || "",
+    interest: prefilledData.interest || "",
+    time: prefilledData.time || "",
+    purpose: prefilledData.purpose || ""
+  });
+
+  const [loading, setLoading] = useState(false);
+
+
+  // 🎓 Degree → Stream Mapping
+  const streamOptions = {
+    "B.Tech": ["CSE", "ECE", "EEE", "Mechanical", "Civil"],
+    "Degree": ["BSc", "BCom", "BA", "BBA"],
+    "Diploma": ["Polytechnic CSE", "Polytechnic ECE", "Mechanical"],
+  };
+
+  // 🎯 Stream → Interest Mapping
+  const interestOptions = {
+    CSE: ["IT Jobs", "Software Development", "Cyber Security"],
+    ECE: ["Core Jobs", "IT Jobs", "Govt Jobs"],
+    EEE: ["Core Jobs", "Govt Jobs"],
+    Mechanical: ["Core Jobs", "Govt Jobs", "Business"],
+    Civil: ["Core Jobs", "Govt Jobs"],
+    BSc: ["IT Jobs", "Non-IT Jobs", "Higher Studies"],
+    BCom: ["Bank Jobs", "Govt Jobs", "Business"],
+    BA: ["Govt Jobs", "Teaching"],
+    BBA: ["Business", "MBA", "Corporate Jobs"],
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    // Handle mobile number validation
+    if (name === "mobile") {
+      const numericValue = value.replace(/\D/g, "");
+      if (numericValue.length <= 10) {
+        setFormData({ ...formData, mobile: numericValue });
+      }
+      return;
+    }
+
+    // Handle name formatting
+    if (name === "fullName") {
+      const formattedValue = value
+        .toLowerCase()
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+
+      setFormData({ ...formData, fullName: formattedValue });
+      return;
+    }
+
+    // Reset dependent dropdowns
+    if (name === "degree") {
+      setFormData({
+        ...formData,
+        degree: value,
+        stream: "",
+        interest: "",
+      });
+      return;
+    }
+
+    if (name === "stream") {
+      setFormData({
+        ...formData,
+        stream: value,
+        interest: "",
+      });
+      return;
+    }
+
+    setFormData({
+      ...formData,
+      [name]: value,
     });
+  };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
+    const trimmedName = formData.fullName.trim();
 
-    // 🟢 local array storage
-    const [requests, setRequests] = useState([]);
+    if (!trimmedName) {
+      alert("Please enter your name");
+      return;
+    }
 
-    const handleChange = (e) => {
-        let value = e.target.value;
+    if (formData.mobile.length !== 10) {
+      alert("Mobile number must be exactly 10 digits");
+      return;
+    }
 
-        if (e.target.name === "fullName") {
-            value = value
-                .toLowerCase()
-                .split(" ")
-                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(" ");
-        }
+    if (!formData.degree || !formData.stream || !formData.interest || !formData.time) {
+      alert("Please fill all required fields");
+      return;
+    }
 
-        if (e.target.name === "time") {
-            const times = {
-                morning: "Morning (9AM - 12PM)",
-                afternoon: "Afternoon (12PM - 4PM)",
-                evening: "Evening (4PM - 8PM)",
-            };
-            value = times[value.toLowerCase()] || value;
-        }
+    setLoading(true);
+    try {
+      const savedRequest = await createCallRequest({
+        fullName: trimmedName,
+        mobile: formData.mobile,
+        degree: formData.degree,
+        stream: formData.stream,
+        interest: formData.interest,
+        time: formData.time,
+        purpose: formData.purpose || "",
+        status: "pending",
+        createdDate: new Date().toISOString(),
+      });
 
-        setFormData({
-            ...formData,
-            [e.target.name]: value,
-        });
-    };
+      navigate("/callsuccessform", { state: savedRequest });
 
+    } catch (error) {
+      console.error("Error saving call request:", error);
+      alert("Failed to submit request. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+  return (
+    <div className="relative min-h-screen overflow-hidden">
 
-        setRequests([...requests, formData]);
-        console.log("Stored Requests:", [...requests, formData]);
+      {/* 🔥 Background Image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${ExamHall})` }}
+      ></div>
 
-        navigate("/callsuccessform", { state: formData });
+      {/* 🔥 Blue Overlay */}
+      <div className="absolute inset-0 bg-brandColorOne/80 backdrop-blur-[2px]"></div>
 
-        // reset form
-        setFormData({
-            fullName: "",
-            phone: "",
-            time: "",
-            purpose: "",
-        });
-    };
-
-    return (
-        <div className="min-h-screen bg-[#0B1220] text-white">
-
-            {/* 🔵 Top Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
-                <BackButton />
-
-                <h1 className="text-lg font-semibold">Request Call</h1>
-
-                <div></div>
-            </div>
-
-            {/* 🔵 Form Card */}
-            <div className="flex justify-center px-4 py-10">
-                <div className="w-full max-w-xl bg-[#2B3A4D] rounded-2xl border border-gray-600 p-8">
-
-                    {/* Title */}
-                    <div className="flex items-center gap-4 mb-6">
-                        <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center">
-                            📞
-                        </div>
-
-                        <div>
-                            <h2 className="text-xl font-semibold">
-                                Schedule a Call
-                            </h2>
-                            <p className="text-gray-300 text-sm">
-                                Our counselors will call you at your preferred time
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Form */}
-                    <form className="space-y-6" onSubmit={handleSubmit}>
-
-                        {/* Full Name */}
-                        <div>
-                            <label className="text-sm text-gray-200 mb-2 block">
-                                Full Name
-                            </label>
-                            <input
-                                name="fullName"
-                                value={formData.fullName}
-                                onChange={handleChange}
-                                placeholder="Enter your name"
-                                className="w-full bg-[#0B1220] px-4 py-3 rounded-lg border border-gray-600 outline-none"
-                            />
-                        </div>
-
-                        {/* Phone */}
-                        <div>
-                            <label className="text-sm text-gray-200 mb-2 block">
-                                Phone Number
-                            </label>
-                            <input
-                                name="phone"
-                                value={formData.phone}
-                                onChange={handleChange}
-                                placeholder="10-digit mobile number"
-                                className="w-full bg-[#0B1220] px-4 py-3 rounded-lg border border-gray-600 outline-none"
-                            />
-                        </div>
-
-                        {/* Preferred Time */}
-                        <div>
-                            <label className="text-sm text-gray-200 mb-2 block">
-                                Preferred Time
-                            </label>
-                            <select
-                                name="time"
-                                value={formData.time}
-                                onChange={handleChange}
-                                className="w-full bg-[#0B1220] px-4 py-3 rounded-lg border border-gray-600 outline-none"
-                            >
-                                <option value="">Select time slot</option>
-                                <option>Morning (9AM - 12PM)</option>
-                                <option>Afternoon (12PM - 4PM)</option>
-                                <option>Evening (4PM - 8PM)</option>
-                            </select>
-                        </div>
-
-                        {/* Purpose */}
-                        <div>
-                            <label className="text-sm text-gray-200 mb-2 block">
-                                Purpose
-                            </label>
-                            <textarea
-                                name="purpose"
-                                value={formData.purpose}
-                                onChange={handleChange}
-                                placeholder="What would you like to discuss?"
-                                rows={4}
-                                className="w-full bg-[#0B1220] px-4 py-3 rounded-lg border border-gray-600 outline-none"
-                            />
-                        </div>
-
-                        {/* Button */}
-                        <StartLearningButton />
-                    </form>
-
-                </div>
-            </div>
+      {/* 🔥 Header */}
+      <div className="relative z-30 flex items-center justify-between px-6 py-4 border-b border-white/20 bg-white/10 backdrop-blur-md">
+        <div onClick={() => navigate("/chatsystem")}>
+          <BackButton />
         </div>
-    );
+        <ProfileMenu variant="light" />
+      </div>
+
+      {/* 🔥 Main Content */}
+      <div className="relative z-20 flex justify-center px-4 py-12">
+        <div className="w-full max-w-xl bg-white/95 backdrop-blur-md rounded-2xl shadow-xl shadow-black/50 mt-10 mb-20 border border-white/30 p-8">
+
+          {/* Title */}
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-12 h-12 bg-brandColorOne/10 rounded-full flex items-center justify-center">
+              <Phone className="text-brandColorOne" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">
+                Schedule a Call
+              </h2>
+              <p className="text-gray-500 text-sm">
+                Our counselors will call you at your preferred time
+              </p>
+            </div>
+          </div>
+
+          <form className="space-y-6" onSubmit={handleSubmit}>
+
+            <div>
+              <input
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleChange}
+                placeholder="Full Name"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-brandColorOne focus:border-brandColorOne outline-none transition"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Name from registration
+              </p>
+            </div>
+
+            <div>
+              <input
+                name="mobile"
+                value={formData.mobile}
+                onChange={handleChange}
+                placeholder="10-digit mobile number"
+                type="tel"
+                inputMode="numeric"
+                maxLength={10}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-brandColorOne focus:border-brandColorOne outline-none transition"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Mobile from registration
+              </p>
+            </div>
+
+            {/* Degree */}
+            <select
+              name="degree"
+              value={formData.degree}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-brandColorOne/20 focus:border-brandColorOne outline-none transition"
+            >
+              <option value="">Select Degree *</option>
+              <option value="B.Tech">B.Tech</option>
+              <option value="Degree">Degree</option>
+              <option value="Diploma">Diploma</option>
+            </select>
+
+            {/* Stream */}
+            {formData.degree && (
+              <select
+                name="stream"
+                value={formData.stream}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-brandColorOne/20 focus:border-brandColorOne outline-none transition"
+              >
+                <option value="">Select Stream *</option>
+                {streamOptions[formData.degree]?.map((stream, index) => (
+                  <option key={index} value={stream}>
+                    {stream}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            {/* Interest */}
+            {formData.stream && (
+              <select
+                name="interest"
+                value={formData.interest}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-brandColorOne/20 focus:border-brandColorOne outline-none transition"
+              >
+                <option value="">Select Interest *</option>
+                {interestOptions[formData.stream]?.map((interest, index) => (
+                  <option key={index} value={interest}>
+                    {interest}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            {/* Time */}
+            <select
+              name="time"
+              value={formData.time}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-brandColorOne/20 focus:border-brandColorOne outline-none transition"
+            >
+              <option value="">Select time slot *</option>
+              <option value="Morning (9AM - 12PM)">
+                Morning (9AM - 12PM)
+              </option>
+              <option value="Afternoon (12PM - 4PM)">
+                Afternoon (12PM - 4PM)
+              </option>
+              <option value="Evening (4PM - 8PM)">
+                Evening (4PM - 8PM)
+              </option>
+            </select>
+
+            {/* Purpose */}
+            <textarea
+              name="purpose"
+              value={formData.purpose}
+              onChange={handleChange}
+              placeholder="What would you like to discuss? (Optional)"
+              rows={4}
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-brandColorOne/20 focus:border-brandColorOne outline-none transition"
+            />
+
+            <button
+              type="submit"
+              disabled={loading}
+              className={`w-full bg-brandColorThree text-white py-3 rounded-lg transition cursor-pointer ${loading
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-brandColorThree/90"
+                }`}
+            >
+              {loading ? "Booking..." : "Book a Call Appointment →"}
+            </button>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+  c
 }
 
 export default Form4;

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Send, ArrowLeft, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import LoadingScreen from "./LoadingScreen";
+import ProfileMenu from "./ProfileMenu";
 
 function ChatSystem({ mode, onStartExam, onBack }) {
     const navigate = useNavigate();
@@ -13,7 +14,15 @@ function ChatSystem({ mode, onStartExam, onBack }) {
     const [selectedOption, setSelectedOption] = useState(null);
     const [chatFormData, setChatFormData] = useState({});
     const [isLoading, setIsLoading] = useState(false);
-    const [redirectInfo, setRedirectInfo] = useState(null); // 🔥 important
+    const [redirectInfo, setRedirectInfo] = useState(null);
+    const loggedUser = JSON.parse(localStorage.getItem("loggedUser") || "{}");
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
+
+    const handleLogout = () => {
+        localStorage.removeItem("loggedUser");
+        navigate("/login");
+    };
+
 
     useEffect(() => {
         setMessages([
@@ -29,51 +38,115 @@ function ChatSystem({ mode, onStartExam, onBack }) {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
-    // 🔥 Navigation happens AFTER loader renders
     useEffect(() => {
         if (isLoading && redirectInfo) {
             const timer = setTimeout(() => {
                 navigate(redirectInfo.path, { state: redirectInfo.data });
             }, 1000);
-
             return () => clearTimeout(timer);
         }
     }, [isLoading, redirectInfo, navigate]);
 
     const askNextQuestion = (option, currentData) => {
-        if (option === "1" || option === "2") {
-            if (!currentData.fullName) {
-                botMessage("Please enter your Full Name only (Example: Bindu)");
-                setStep("fullName");
-            } else if (!currentData.classGrade) {
+        const loggedUser = JSON.parse(localStorage.getItem("loggedUser") || "{}");
+
+        const enrichedData = {
+            ...currentData,
+            fullName: currentData.fullName || loggedUser.fullName || "",
+            mobile: currentData.mobile || loggedUser.mobile || "",
+        };
+
+        const streamOptions = {
+            "B.Tech": ["CSE", "ECE", "EEE", "Mechanical", "Civil"],
+            "Degree": ["BSc", "BCom", "BA", "BBA"],
+            "Diploma": ["Polytechnic CSE", "Polytechnic ECE", "Mechanical"],
+        };
+
+        const interestOptions = {
+            CSE: ["IT Jobs", "Software Development", "Cyber Security"],
+            ECE: ["Core Jobs", "IT Jobs", "Govt Jobs"],
+            EEE: ["Core Jobs", "Govt Jobs"],
+            Mechanical: ["Core Jobs", "Govt Jobs", "Business"],
+            Civil: ["Core Jobs", "Govt Jobs"],
+            BSc: ["IT Jobs", "Non-IT Jobs", "Higher Studies"],
+            BCom: ["Bank Jobs", "Govt Jobs", "Business"],
+            BA: ["Govt Jobs", "Teaching"],
+            BBA: ["Business", "MBA", "Corporate Jobs"],
+        };
+
+        if (option === "1") {
+            if (!enrichedData.classGrade) {
                 botMessage("Enter your Class (10th / Intermediate / Graduation / Post Graduation)");
                 setStep("classGrade");
-            } else if (!currentData.exam) {
-                botMessage("Enter Target Exam (JEE / NEET / EAMCET / Government Exams / Private Exams)");
+            } else if (!enrichedData.exam) {
+                botMessage("Enter Target Exam (JEE Mains / NEET / EAMCET / Government Exams / Private Exams)");
                 setStep("exam");
-            } else if (!currentData.language) {
+            } else if (!enrichedData.language) {
                 botMessage("Preferred Language? (English / Telugu / Hindi)");
                 setStep("language");
             } else {
-                finishForm(option, currentData);
+                finishForm(option, enrichedData);
             }
         }
 
-        if (option === "3" || option === "4") {
-            if (!currentData.fullName) {
-                botMessage("Please enter your Full Name only.");
-                setStep("fullName");
-            } else if (!currentData.phone) {
-                botMessage("Enter your 10-digit phone number only.");
-                setStep("phone");
-            } else if (!currentData.time) {
+        if (option === "2") {
+            if (!enrichedData.classGrade) {
+                botMessage("Enter your Class (10th / Intermediate / Graduation / Post Graduation)");
+                setStep("classGrade");
+            } else if (!enrichedData.exam) {
+                botMessage("Which exam do you want mock tests for? (JEE Mains / NEET / EAMCET / Government Exams)");
+                setStep("exam");
+            } else if (!enrichedData.language) {
+                botMessage("Preferred Language? (English / Telugu / Hindi)");
+                setStep("language");
+            } else {
+                finishForm(option, enrichedData);
+            }
+        }
+
+        if (option === "3") {
+            if (!enrichedData.degree) {
+                botMessage("Select your Degree (B.Tech / Degree / Diploma)");
+                setStep("degree");
+            } else if (!enrichedData.stream) {
+                const streams = streamOptions[enrichedData.degree] || [];
+                botMessage(`Available Streams:\n${streams.join("\n")}`);
+                setStep("stream");
+            } else if (!enrichedData.interest) {
+                const interests = interestOptions[enrichedData.stream] || [];
+                botMessage(`Available Interests:\n${interests.join("\n")}`);
+                setStep("interest");
+            } else if (!enrichedData.time) {
                 botMessage("Preferred Time? (Morning / Afternoon / Evening)");
                 setStep("time");
-            } else if (!currentData.purpose) {
+            } else if (!enrichedData.purpose) {
                 botMessage("What would you like to discuss?");
                 setStep("purpose");
             } else {
-                finishForm(option, currentData);
+                finishForm(option, enrichedData);
+            }
+        }
+
+        if (option === "4") {
+            if (!enrichedData.degree) {
+                botMessage("Select your Degree (B.Tech / Degree / Diploma)");
+                setStep("degree");
+            } else if (!enrichedData.stream) {
+                const streams = streamOptions[enrichedData.degree] || [];
+                botMessage(`Available Streams:\n${streams.join("\n")}`);
+                setStep("stream");
+            } else if (!enrichedData.interest) {
+                const interests = interestOptions[enrichedData.stream] || [];
+                botMessage(`Available Interests:\n${interests.join("\n")}`);
+                setStep("interest");
+            } else if (!enrichedData.time) {
+                botMessage("Preferred Time? (Morning / Afternoon / Evening)");
+                setStep("time");
+            } else if (!enrichedData.purpose) {
+                botMessage("What would you like to discuss?");
+                setStep("purpose");
+            } else {
+                finishForm(option, enrichedData);
             }
         }
     };
@@ -118,7 +191,15 @@ function ChatSystem({ mode, onStartExam, onBack }) {
         if (step === "menu") {
             if (["1", "2", "3", "4"].includes(userInput)) {
                 setSelectedOption(userInput);
-                askNextQuestion(userInput, {});
+                const loggedUser = JSON.parse(localStorage.getItem("loggedUser") || "{}");
+                setChatFormData({
+                    fullName: loggedUser.fullName || "",
+                    mobile: loggedUser.mobile || ""
+                });
+                askNextQuestion(userInput, {
+                    fullName: loggedUser.fullName || "",
+                    mobile: loggedUser.mobile || ""
+                });
             } else {
                 botMessage("Please enter only 1, 2, 3 or 4.");
             }
@@ -127,7 +208,8 @@ function ChatSystem({ mode, onStartExam, onBack }) {
 
             if (step === "exam") {
                 const exams = {
-                    jee: "JEE",
+                    jee: "JEE Mains",
+                    "jee mains": "JEE Mains",
                     neet: "NEET",
                     eamcet: "EAMCET",
                     "government exams": "Government Exams",
@@ -155,6 +237,51 @@ function ChatSystem({ mode, onStartExam, onBack }) {
                 value = classes[userInput.toLowerCase()] || userInput;
             }
 
+            if (step === "degree") {
+                const degrees = {
+                    "b.tech": "B.Tech",
+                    "btech": "B.Tech",
+                    "degree": "Degree",
+                    "diploma": "Diploma"
+                };
+                value = degrees[userInput.toLowerCase()] || userInput;
+            }
+
+            if (step === "stream") {
+                const streamMap = {
+                    cse: "CSE",
+                    ece: "ECE",
+                    eee: "EEE",
+                    mechanical: "Mechanical",
+                    civil: "Civil",
+                    bsc: "BSc",
+                    bcom: "BCom",
+                    ba: "BA",
+                    bba: "BBA",
+                    "polytechnic cse": "Polytechnic CSE",
+                    "polytechnic ece": "Polytechnic ECE"
+                };
+                value = streamMap[userInput.toLowerCase()] || userInput;
+            }
+
+            if (step === "interest") {
+                const interestMap = {
+                    "it jobs": "IT Jobs",
+                    "software development": "Software Development",
+                    "cyber security": "Cyber Security",
+                    "core jobs": "Core Jobs",
+                    "govt jobs": "Govt Jobs",
+                    business: "Business",
+                    "higher studies": "Higher Studies",
+                    "bank jobs": "Bank Jobs",
+                    teaching: "Teaching",
+                    mba: "MBA",
+                    "corporate jobs": "Corporate Jobs",
+                    "non-it jobs": "Non-IT Jobs"
+                };
+                value = interestMap[userInput.toLowerCase()] || userInput;
+            }
+
             if (step === "time") {
                 const times = {
                     morning: "Morning (9AM - 12PM)",
@@ -180,33 +307,29 @@ function ChatSystem({ mode, onStartExam, onBack }) {
         setInputValue("");
     };
 
-    // 🔥 Loader replaces entire UI
     if (isLoading) {
         return <LoadingScreen />;
     }
 
     return (
         <div className="flex flex-col h-screen bg-gray-100">
-            {/* Header */}
             <div className="bg-brandColorOne text-white px-6 py-4 flex justify-between shadow-md">
                 <div className="flex items-center gap-3">
                     <button
-                     onClick={() => navigate("/")} 
-                     className="p-2 rounded-full transition duration-200 hover"    >
+                        onClick={() => navigate("/")}
+                        className="p-2 rounded-full transition duration-200 bg-white text-brandColorThree hover cursor-pointer">
                         <ArrowLeft size={22} />
                     </button>
                     <h2 className="text-xl font-semibold">Chat with Artha</h2>
                 </div>
-                <div className="bg-white/20 p-2 rounded-full">
-                    <User size={22} />
-                </div>
+
+
+                <ProfileMenu variant="dark" />
             </div>
 
-            {/* Messages */}
             <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4">
                 {messages.map((msg, i) => {
                     const isWelcomeMessage = i === 0 && msg.type === "bot";
-
                     return (
                         <div key={i} className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"}`}>
                             <div
@@ -226,18 +349,26 @@ function ChatSystem({ mode, onStartExam, onBack }) {
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Input */}
             <div className="bg-white p-4 flex gap-3">
                 <input
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                    className="flex-1 border rounded-xl px-4 py-2 border-brandColorOne"
+                    className="flex-1
+                                border
+                                border-gray-500
+                                rounded-xl
+                                px-4 py-2
+                                outline-none
+                                focus:border
+                                focus:border-brandColorThree
+                                transition-all duration-200"
                     placeholder="Type your answer..."
                 />
+
                 <button
                     onClick={handleSend}
-                    className="bg-brandColorOne text-white px-4 rounded-xl"
+                    className="bg-brandColorThree text-white px-4 rounded-xl cursor-pointer"
                 >
                     <Send size={18} />
                 </button>

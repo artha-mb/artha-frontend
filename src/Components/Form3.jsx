@@ -1,175 +1,298 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import StartLearningButton from "./StartLearningButton";
+import { Phone } from "lucide-react";
 import BackButton from "./BackButton";
+import { createCareerRequest } from "../apis/careerRequestApi";
+import ProfileMenu from "./ProfileMenu";
+import ExamHall from "../assets/ExamHall.jpg";
 
 function Form3() {
+  const location = useLocation();
+  const prefilledData = location.state?.formData || {};
+  const navigate = useNavigate();
 
-    const location = useLocation();
-    const prefilledData = location.state || {};
-    const navigate = useNavigate();
+  console.log("=== Form3 Debug ===");
+  console.log("Full prefilledData from chat:", prefilledData);
 
-    // 🟢 form state
-    const [formData, setFormData] = useState({
-        fullName: prefilledData.fullName || "",
-        phone: prefilledData.phone || "",
-        time: prefilledData.time || "",
-        purpose: prefilledData.purpose || "",
-    });
+  const loggedUser = JSON.parse(localStorage.getItem("loggedUser") || "{}");
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
+  const handleLogout = () => {
+    localStorage.removeItem("loggedUser");
+    navigate("/login");
+  };
 
+  const [formData, setFormData] = useState({
+    fullName: loggedUser.fullName || prefilledData.fullName || "",
+    mobile: loggedUser.mobile || prefilledData.mobile || "",
+    degree: prefilledData.degree || "",
+    stream: prefilledData.stream || "",
+    interest: prefilledData.interest || "",
+    time: prefilledData.time || "",
+    purpose: prefilledData.purpose || ""
+  });
 
-    // 🟢 local array storage
-    const [requests, setRequests] = useState([]);
-
-    const handleChange = (e) => {
-        let value = e.target.value;
-
-        if (e.target.name === "fullName") {
-            value = value
-                .toLowerCase()
-                .split(" ")
-                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(" ");
-        }
-
-        if (e.target.name === "time") {
-            const times = {
-                morning: "Morning (9AM - 12PM)",
-                afternoon: "Afternoon (12PM - 4PM)",
-                evening: "Evening (4PM - 8PM)",
-            };
-            value = times[value.toLowerCase()] || value;
-        }
-
-        setFormData({
-            ...formData,
-            [e.target.name]: value,
-        });
-    };
+  const [loading, setLoading] = useState(false);
 
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+  const streamOptions = {
+    "B.Tech": ["CSE", "ECE", "EEE", "Mechanical", "Civil"],
+    "Degree": ["BSc", "BCom", "BA", "BBA"],
+    "Diploma": ["Polytechnic CSE", "Polytechnic ECE", "Mechanical"],
+  };
 
-        setRequests([...requests, formData]);
-        console.log("Stored Requests:", [...requests, formData]);
+  const interestOptions = {
+    CSE: ["IT Jobs", "Software Development", "Cyber Security"],
+    ECE: ["Core Jobs", "IT Jobs", "Govt Jobs"],
+    EEE: ["Core Jobs", "Govt Jobs"],
+    Mechanical: ["Core Jobs", "Govt Jobs", "Business"],
+    Civil: ["Core Jobs", "Govt Jobs"],
+    BSc: ["IT Jobs", "Non-IT Jobs", "Higher Studies"],
+    BCom: ["Bank Jobs", "Govt Jobs", "Business"],
+    BA: ["Govt Jobs", "Teaching"],
+    BBA: ["Business", "MBA", "Corporate Jobs"],
+  };
 
-        navigate("/callsuccessform", { state: formData });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
 
-        // reset form
-        setFormData({
-            fullName: "",
-            phone: "",
-            time: "",
-            purpose: "",
-        });
-    };
+    if (name === "mobile") {
+      const numericValue = value.replace(/\D/g, "");
+      if (numericValue.length <= 10) {
+        setFormData({ ...formData, mobile: numericValue });
+      }
+      return;
+    }
 
-    return (
-        <div className="min-h-screen bg-[#0B1220] text-white">
+    if (name === "fullName") {
+      const formattedValue = value
+        .toLowerCase()
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+      setFormData({ ...formData, fullName: formattedValue });
+      return;
+    }
 
-            {/* 🔵 Top Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
-                <BackButton />
+    if (name === "degree") {
+      setFormData({
+        ...formData,
+        degree: value,
+        stream: "",
+        interest: "",
+      });
+      return;
+    }
 
-                <h1 className="text-lg font-semibold">Request Call</h1>
+    if (name === "stream") {
+      setFormData({
+        ...formData,
+        stream: value,
+        interest: "",
+      });
+      return;
+    }
 
-                <div></div>
-            </div>
+    setFormData({ ...formData, [name]: value });
+  };
 
-            {/* 🔵 Form Card */}
-            <div className="flex justify-center px-4 py-10">
-                <div className="w-full max-w-xl bg-[#2B3A4D] rounded-2xl border border-gray-600 p-8">
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-                    {/* Title */}
-                    <div className="flex items-center gap-4 mb-6">
-                        <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center">
-                            📞
-                        </div>
+    const trimmedName = formData.fullName.trim();
 
-                        <div>
-                            <h2 className="text-xl font-semibold">
-                                Schedule a Call
-                            </h2>
-                            <p className="text-gray-300 text-sm">
-                                Our counselors will call you at your preferred time
-                            </p>
-                        </div>
-                    </div>
+    if (!trimmedName) {
+      alert("Please enter your name");
+      return;
+    }
 
-                    {/* Form */}
-                    <form className="space-y-6" onSubmit={handleSubmit}>
+    if (formData.mobile.length !== 10) {
+      alert("Mobile number must be exactly 10 digits");
+      return;
+    }
 
-                        {/* Full Name */}
-                        <div>
-                            <label className="text-sm text-gray-200 mb-2 block">
-                                Full Name
-                            </label>
-                            <input
-                                name="fullName"
-                                value={formData.fullName}
-                                onChange={handleChange}
-                                placeholder="Enter your name"
-                                className="w-full bg-[#0B1220] px-4 py-3 rounded-lg border border-gray-600 outline-none"
-                            />
-                        </div>
+    if (!formData.degree || !formData.stream || !formData.interest || !formData.time || !formData.purpose) {
+      alert("Please fill all required fields");
+      return;
+    }
 
-                        {/* Phone */}
-                        <div>
-                            <label className="text-sm text-gray-200 mb-2 block">
-                                Phone Number
-                            </label>
-                            <input
-                                name="phone"
-                                value={formData.phone}
-                                onChange={handleChange}
-                                placeholder="10-digit mobile number"
-                                className="w-full bg-[#0B1220] px-4 py-3 rounded-lg border border-gray-600 outline-none"
-                            />
-                        </div>
+    setLoading(true);
 
-                        {/* Preferred Time */}
-                        <div>
-                            <label className="text-sm text-gray-200 mb-2 block">
-                                Preferred Time
-                            </label>
-                            <select
-                                name="time"
-                                value={formData.time}
-                                onChange={handleChange}
-                                className="w-full bg-[#0B1220] px-4 py-3 rounded-lg border border-gray-600 outline-none"
-                            >
-                                <option value="">Select time slot</option>
-                                <option>Morning (9AM - 12PM)</option>
-                                <option>Afternoon (12PM - 4PM)</option>
-                                <option>Evening (4PM - 8PM)</option>
-                            </select>
-                        </div>
+    try {
+      const savedRequest = await createCareerRequest({
+        fullName: trimmedName,
+        mobile: formData.mobile,
+        degree: formData.degree,
+        stream: formData.stream,
+        interest: formData.interest,
+        time: formData.time,
+        purpose: formData.purpose,
+        status: "pending",
+        createdDate: new Date().toISOString(),
+      });
 
-                        {/* Purpose */}
-                        <div>
-                            <label className="text-sm text-gray-200 mb-2 block">
-                                Purpose
-                            </label>
-                            <textarea
-                                name="purpose"
-                                value={formData.purpose}
-                                onChange={handleChange}
-                                placeholder="What would you like to discuss?"
-                                rows={4}
-                                className="w-full bg-[#0B1220] px-4 py-3 rounded-lg border border-gray-600 outline-none"
-                            />
-                        </div>
+      navigate("/callsuccessform", { state: savedRequest });
 
-                        {/* Button */}
-                        <StartLearningButton />
-                    </form>
+    } catch (error) {
+      alert("Failed to save request. Make sure JSON Server is running.");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-                </div>
-            </div>
+  return (
+    <div className="relative min-h-screen overflow-hidden">
+
+      {/* 🔥 Background Image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${ExamHall})` }}
+      ></div>
+
+      {/* 🔥 Blue Overlay */}
+      <div className="absolute inset-0 bg-brandColorOne/80 backdrop-blur-[2px]"></div>
+
+      {/* 🔥 Top Header */}
+      <div className="relative z-30 flex items-center justify-between px-6 py-4 border-b border-white/20 bg-white/10 backdrop-blur-md">
+        <div onClick={() => navigate("/chatsystem")}>
+          <BackButton />
         </div>
-    );
+        <ProfileMenu variant="light" />
+      </div>
+
+      {/* 🔥 Main Content */}
+      <div className="relative z-20 flex justify-center px-4 py-12">
+        <div className="w-full max-w-xl bg-white/95 backdrop-blur-md rounded-2xl shadow-xl shadow-black/50 mt-10 mb-20 border border-white/30 p-8">
+
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-12 h-12 bg-brandColorOne/10 rounded-full flex items-center justify-center">
+              <Phone className="text-brandColorThree" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">
+                Schedule a Call
+              </h2>
+              <p className="text-gray-500 text-sm">
+                Our counselors will call you at your preferred time
+              </p>
+            </div>
+          </div>
+
+          <form className="space-y-6" onSubmit={handleSubmit}>
+
+            <div>
+              <input
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleChange}
+                placeholder="Full Name"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:border-1 focus:border-brandColorThree outline-none transition"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Name from registration
+              </p>
+            </div>
+
+            <div>
+              <input
+                name="mobile"
+                value={formData.mobile}
+                onChange={handleChange}
+                placeholder="10-digit mobile number"
+                type="tel"
+                inputMode="numeric"
+                maxLength={10}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:border-1 focus:border-brandColorThree outline-none transition"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Mobile from registration
+              </p>
+            </div>
+
+            <select
+              name="degree"
+              value={formData.degree}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-1 focus:border-brandColorThree outline-none transition"
+            >
+              <option value="">Select Degree *</option>
+              <option value="B.Tech">B.Tech</option>
+              <option value="Degree">Degree</option>
+              <option value="Diploma">Diploma</option>
+            </select>
+
+            {formData.degree && (
+              <select
+                name="stream"
+                value={formData.stream}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-1 focus:border-brandColorThree outline-none transition"
+              >
+                <option value="">Select Stream *</option>
+                {streamOptions[formData.degree]?.map((stream, index) => (
+                  <option key={index} value={stream}>{stream}</option>
+                ))}
+              </select>
+            )}
+
+            {formData.stream && (
+              <select
+                name="interest"
+                value={formData.interest}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-1 focus:border-brandColorThree outline-none transition"
+              >
+                <option value="">Select Interest *</option>
+                {interestOptions[formData.stream]?.map((interest, index) => (
+                  <option key={index} value={interest}>{interest}</option>
+                ))}
+              </select>
+            )}
+
+            <select
+              name="time"
+              value={formData.time}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-1 focus:border-brandColorThree outline-none transition"
+            >
+              <option value="">Select time slot *</option>
+              <option value="Morning (9AM - 12PM)">Morning (9AM - 12PM)</option>
+              <option value="Afternoon (12PM - 4PM)">Afternoon (12PM - 4PM)</option>
+              <option value="Evening (4PM - 8PM)">Evening (4PM - 8PM)</option>
+            </select>
+
+            <textarea
+              name="purpose"
+              value={formData.purpose}
+              onChange={handleChange}
+              placeholder="What would you like to discuss? *"
+              rows={4}
+              required
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-1 focus:border-brandColorThree outline-none transition"
+            />
+
+            <button
+              type="submit"
+              disabled={loading}
+              className={`w-full bg-brandColorThree hover:bg-brandColorFour text-white py-3 rounded-lg cursor-pointer transition ${loading
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-brandColorFour"
+                }`}
+            >
+              {loading ? "Booking..." : "Book a Call Appointment →"}
+            </button>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+
 }
 
 export default Form3;

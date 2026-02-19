@@ -4,7 +4,7 @@ const Services = () => {
   return (
     <section className="py-16 bg-gray-50">
       <div className="max-w-6xl mx-auto px-6">
-        
+
         {/* Heading */}
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-[#8806CE] justify-center items-center">
@@ -17,7 +17,7 @@ const Services = () => {
 
         {/* Services Cards */}
         <div className="grid md:grid-cols-3 gap-8 justify-center items-center">
-          
+
           {/* Service 1 */}
           <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition duration-300">
             <h3 className="text-xl font-semibold mb-3">
@@ -28,7 +28,7 @@ const Services = () => {
               AI-powered assessment test.
             </p>
 
-            <button className="text-[#8806CE] font-semibold hover:underline hover:text-[#65049C] transition duration-300">
+            <button className="text-[#8806CE] cursor-pointer font-semibold hover:underline hover:text-[#65049C] transition duration-300">
               Read More →
             </button>
           </div>
@@ -43,7 +43,7 @@ const Services = () => {
               improve your employability.
             </p>
 
-            <button className="text-[#8806CE] font-semibold hover:underline hover:text-[#65049C] transition duration-300">
+            <button className="text-[#8806CE] cursor-pointer font-semibold hover:underline hover:text-[#65049C] transition duration-300">
               Read More →
             </button>
           </div>
@@ -58,7 +58,7 @@ const Services = () => {
               to your goals.
             </p>
 
-            <button className="text-[#8806CE] font-semibold hover:underline hover:text-[#65049C] transition duration-300">
+            <button className="text-[#8806CE] cursor-pointer font-semibold hover:underline hover:text-[#65049C] transition duration-300">
               Read More →
             </button>
           </div>

@@ -43,11 +43,11 @@ export default function WhyArtha() {
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            
+
             {/* Filled Button */}
             <button
               onClick={() => navigate("/mock-test")}
-              className="bg-[#8806CE] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#65049C] transition-all duration-300"
+              className="bg-[#8806CE] cursor-pointer text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#65049C] transition-all duration-300"
             >
               Take Free Mock
             </button>
@@ -55,7 +55,7 @@ export default function WhyArtha() {
             {/* Outline Button */}
             <button
               onClick={() => navigate("/book-session")}
-              className="border-2 border-[#8806CE] text-[#8806CE] px-8 py-3 rounded-lg font-semibold hover:bg-[#65049C] hover:text-white hover:border-[#65049C] transition-all duration-300"
+              className="border-2 cursor-pointer border-[#8806CE] text-[#8806CE] px-8 py-3 rounded-lg font-semibold hover:bg-[#65049C] hover:text-white hover:border-[#65049C] transition-all duration-300"
             >
               Book Career Session
             </button>
